@@ -30,4 +30,7 @@ public interface DishMapper {
     List<Dish> getByIds(List<Long> ids);
 
     void deleteByIds(List<Long> ids);
+
+    @Select("select * from dish where id = #{id}")
+    Dish getById(Long id);
 }
