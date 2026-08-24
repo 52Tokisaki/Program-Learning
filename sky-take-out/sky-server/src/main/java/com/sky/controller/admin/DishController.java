@@ -45,4 +45,11 @@ public class DishController {
         log.info("查询菜品详情：{}", id);
         return Result.success(dishService.getById(id));
     }
+
+    @PutMapping
+    public Result update(@RequestBody DishDTO dishDTO) {
+        log.info("修改菜品：{}", dishDTO);
+        dishService.update(dishDTO);
+        return Result.success();
+    }
 }
