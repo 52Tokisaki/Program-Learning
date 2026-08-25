@@ -52,4 +52,17 @@ public class DishController {
         dishService.update(dishDTO);
         return Result.success();
     }
+
+    @GetMapping("/list")
+    public Result<List<DishVO>> getByCategoryId(Long categoryId) {
+        log.info("根据分类id查询菜品列表, {}", categoryId);
+        return Result.success(dishService.getByCategoryId(categoryId));
+    }
+
+    @PostMapping("/status/{status}")
+    public Result enableOrDisableDish(@PathVariable Integer status, Long id) {
+        log.info("修改菜品状态：{}, {}", id, status);
+        dishService.updateStatus(id, status);
+        return Result.success();
+    }
 }

@@ -104,4 +104,15 @@ public class DishServiceImpl implements DishService {
         BeanUtils.copyProperties(dishDTO, dish);
         dishMapper.update(dish);
     }
+
+    @Override
+    public List<DishVO> getByCategoryId(Long categoryId) {
+        List<DishVO> dishList = dishMapper.getByCategoryId(categoryId);
+        return dishList;
+    }
+
+    @Override
+    public void updateStatus(Long id, Integer status) {
+        dishMapper.updateStatusById(id, status);
+    }
 }
