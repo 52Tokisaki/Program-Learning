@@ -8,4 +8,6 @@ import java.util.List;
 @Mapper
 public interface SetmealDishMapper {
     List<SetmealDish> getByDishIds(List<Long> dishIds);
+
+    void insertBatch(List<SetmealDish> setmealDishes);
 }
