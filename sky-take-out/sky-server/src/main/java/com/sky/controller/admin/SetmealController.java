@@ -47,4 +47,17 @@ public class SetmealController {
         setmealService.deleteByIds(ids);
         return Result.success();
     }
+
+    @GetMapping("/{id}")
+    public Result getById(@PathVariable Long id) {
+        log.info("根据id查询套餐：{}", id);
+        return Result.success(setmealService.getById(id));
+    }
+
+    @PutMapping
+    public Result update(@RequestBody SetmealDTO setmealDTO) {
+        log.info("修改套餐, {}", setmealDTO);
+        setmealService.update(setmealDTO);
+        return Result.success();
+    }
 }

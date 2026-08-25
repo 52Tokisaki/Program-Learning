@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.github.pagehelper.Page;
 import com.sky.annotation.AutoFill;
+import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
@@ -31,5 +32,11 @@ public interface SetmealMapper {
     List<Setmeal> getByIds(List<Long> ids);
 
     void deleteBatch(List<Long> ids);
+
+    @Select("select * from setmeal where id = #{id}")
+    Setmeal getById(Long id);
+
+    @AutoFill(OperationType.INSERT)
+    void update(Setmeal setmeal);
 }
 
