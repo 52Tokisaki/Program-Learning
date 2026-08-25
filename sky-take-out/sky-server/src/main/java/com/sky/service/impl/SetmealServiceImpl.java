@@ -54,7 +54,8 @@ public class SetmealServiceImpl implements SetmealService {
     }
 
     @Override
-    public void deleteBydIds(List<Long> ids) {
+    @Transactional
+    public void deleteByIds(List<Long> ids) {
         // 若套餐中存在已启售的套餐，则不允许删除
         List<Setmeal> setmealList = setmealMapper.getByIds(ids);
         if (setmealList != null && !setmealList.isEmpty()) {
@@ -64,6 +65,8 @@ public class SetmealServiceImpl implements SetmealService {
                 }
             }
         }
+        setmealMapper.deleteBatch(ids);
+        setmealDishMapper.deleteBatchBySetmealIds(ids);
     }
 }
 
