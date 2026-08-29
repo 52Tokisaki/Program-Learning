@@ -17,5 +17,5 @@ sky:
     password: 123456
     database: 10
   wechat:
-    appid: test
-    secret: test
+    appid: wxa656715b9a1a20a5
+    secret: b99ce26239ddd2e3fa2d20a380dbf6a3
