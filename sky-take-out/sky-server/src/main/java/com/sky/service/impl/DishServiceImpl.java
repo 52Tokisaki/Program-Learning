@@ -19,13 +19,11 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,9 +39,16 @@ public class DishServiceImpl implements DishService {
     @Autowired
     private SetmealDishMapper setmealDishMapper;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @Override
     @Transactional // 开启事务
     public void save(DishDTO dishDTO) {
+        Long categoryId = dishDTO.getCategoryId();
+        String key = "dish_" + categoryId;
+        // 清除Redis中对应菜品分类的缓存数据
+        cleanCache(key);
         Dish dish = new Dish();
         BeanUtils.copyProperties(dishDTO, dish);
         dishMapper.insert(dish);
@@ -75,6 +80,9 @@ public class DishServiceImpl implements DishService {
         if (setmealDishList != null && !setmealDishList.isEmpty()) {
             throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
         }
+        // 清除Redis中对应菜品分类的缓存数据
+        cleanCache("dish_*");
+
         dishMapper.deleteByIds(ids);
         dishFlavorMapper.deleteByDishIds(ids);
     }
@@ -101,6 +109,7 @@ public class DishServiceImpl implements DishService {
         if (flavors != null && !flavors.isEmpty()) {
             dishFlavorMapper.insertBatch(flavors.stream().peek(flavor -> flavor.setDishId(dishDTO.getId())).collect(Collectors.toList()));
         }
+        cleanCache("dish_*");
         Dish dish = new Dish();
         BeanUtils.copyProperties(dishDTO, dish);
         dishMapper.update(dish);
@@ -114,6 +123,7 @@ public class DishServiceImpl implements DishService {
 
     @Override
     public void updateStatus(Long id, Integer status) {
+        cleanCache("dish_*");
         dishMapper.updateStatusById(id, status);
     }
 
@@ -139,5 +149,11 @@ public class DishServiceImpl implements DishService {
         }
 
         return dishVOList;
+    }
+
+    // 根据pattern清除缓存
+    private void cleanCache(String pattern) {
+        Set keys = redisTemplate.keys(pattern);
+        redisTemplate.delete(keys);
     }
 }
