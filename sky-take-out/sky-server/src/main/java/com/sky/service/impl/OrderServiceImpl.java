@@ -194,4 +194,30 @@ public class OrderServiceImpl implements OrderService {
         return orderVO;
     }
 
+    @Override
+    public void cancelOrder(Long id) throws Exception {
+        // 1. 先判断订单是否存在
+        Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 2. 判断订单状态是否已接单
+        // 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        if (orders.getStatus() > Orders.TO_BE_CONFIRMED) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 3. 判断订单是否已支付
+        if (orders.getPayStatus().equals(Orders.PAID)) {
+//            weChatPayUtil.refund(orders.getNumber(), orders.getNumber(), new BigDecimal(0.01), new BigDecimal(0.01));
+            orders.setPayStatus(Orders.REFUND); // 已退款
+        }
+
+        // 4. 设置订单状态, 取消原因，取消时间
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelTime(LocalDateTime.now());
+        orders.setCancelReason("用户取消订单");
+        orderMapper.update(orders);
+    }
 }

@@ -27,4 +27,6 @@ public interface OrderService {
     PageResult pageHistoryQuery(Integer page, Integer pageSize, Integer status);
 
     OrderVO getOrderDetailById(Long id);
+
+    void cancelOrder(Long id) throws Exception;
 }
