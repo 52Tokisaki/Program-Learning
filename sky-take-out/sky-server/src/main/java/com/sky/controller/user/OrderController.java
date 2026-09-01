@@ -7,6 +7,7 @@ import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -50,5 +51,10 @@ public class OrderController {
     public Result pageHistoryQuery(Integer page, Integer pageSize, Integer status) {
         PageResult pageResult = orderService.pageHistoryQuery(page, pageSize, status);
         return Result.success(pageResult);
+    }
+
+    @GetMapping("/orderDetail/{id}")
+    public Result<OrderVO> getOrderDetailById(@PathVariable Long id) {
+        return Result.success(orderService.getOrderDetailById(id));
     }
 }
