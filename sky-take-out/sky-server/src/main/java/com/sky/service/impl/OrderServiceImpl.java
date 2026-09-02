@@ -212,7 +212,7 @@ public class OrderServiceImpl implements OrderService {
         Orders orders = new Orders();
         orders.setId(id);
         if (ordersDB.getPayStatus().equals(Orders.PAID)) {
-            weChatPayUtil.refund(ordersDB.getNumber(), ordersDB.getNumber(), new BigDecimal(0.01), new BigDecimal(0.01));
+//            weChatPayUtil.refund(ordersDB.getNumber(), ordersDB.getNumber(), new BigDecimal(0.01), new BigDecimal(0.01));
             orders.setPayStatus(Orders.REFUND); // 已退款
         }
 
@@ -221,5 +221,23 @@ public class OrderServiceImpl implements OrderService {
         orders.setCancelTime(LocalDateTime.now());
         orders.setCancelReason("用户取消订单");
         orderMapper.update(orders);
+    }
+
+    @Override
+    public void repetition(Long id) {
+        Long userId = BaseContext.getCurrentId();
+
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
+        List<ShoppingCart> shoppingCartList = new ArrayList<>();
+        if (orderDetailList != null && orderDetailList.size() > 0) {
+            for (OrderDetail orderDetail : orderDetailList) {
+                ShoppingCart shoppingCart = new ShoppingCart();
+                BeanUtils.copyProperties(orderDetail, shoppingCart);
+                shoppingCart.setUserId(userId);
+                shoppingCart.setCreateTime(LocalDateTime.now());
+                shoppingCartList.add(shoppingCart);
+            }
+        }
+        shoppingCartMapper.insertBatch(shoppingCartList);
     }
 }
