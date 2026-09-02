@@ -60,4 +60,18 @@ public class OrderController {
         orderService.cancel(ordersCancelDTO);
         return Result.success();
     }
+
+    @PutMapping("/delivery/{id}")
+    public Result delivey(@PathVariable Long id) {
+        log.info("【后台管理】订单派送, id={}", id);
+        orderService.delivery(id);
+        return Result.success();
+    }
+
+    @PutMapping("/complete/{id}")
+    public Result complete(@PathVariable Long id) {
+        log.info("【后台管理】订单完成, id={}", id);
+        orderService.complete(id);
+        return Result.success();
+    }
 }
