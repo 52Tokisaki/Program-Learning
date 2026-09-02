@@ -5,10 +5,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersConfirmDTO;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -289,6 +286,47 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
         Orders orders = Orders.builder().id(ordersConfirmDTO.getId()).status(Orders.CONFIRMED).build();
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) throws Exception {
+        Orders ordersDB = orderMapper.getById(ordersRejectionDTO.getId());
+        // 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders orders = new Orders();
+        orders.setId(ordersRejectionDTO.getId());
+        if (ordersDB.getPayStatus().equals(Orders.PAID)) {
+//            weChatPayUtil.refund(ordersDB.getNumber(), ordersDB.getNumber(), new BigDecimal(0.01), new BigDecimal(0.01));
+            orders.setPayStatus(Orders.REFUND); // 已退款
+        }
+        orders.setCancelReason(ordersRejectionDTO.getRejectionReason());
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelTime(LocalDateTime.now());
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void cancel(OrdersCancelDTO ordersCancelDTO) throws Exception {
+        // 商家取消订单
+        Orders ordersDB = orderMapper.getById(ordersCancelDTO.getId());
+
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Orders orders = new Orders();
+        orders.setId(ordersCancelDTO.getId());
+        if (ordersDB.getPayStatus().equals(Orders.PAID)) {
+//            weChatPayUtil.refund(ordersDB.getNumber(), ordersDB.getNumber(), new BigDecimal(0.01), new BigDecimal(0.01));
+            orders.setPayStatus(Orders.REFUND); // 已退款
+        }
+        orders.setCancelReason(ordersCancelDTO.getCancelReason());
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelTime(LocalDateTime.now());
         orderMapper.update(orders);
     }
 }
