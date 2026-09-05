@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -19,6 +20,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,9 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,6 +54,11 @@ public class OrderServiceImpl implements OrderService {
     private UserMapper userMapper;
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+
+    @Autowired
+    private WebSocketServer webSocketServer;
+
+    private static final Integer ORDER_PAID = 1;
 
     @Override
     @Transactional
@@ -108,6 +117,12 @@ public class OrderServiceImpl implements OrderService {
                 .orderAmount(orders.getAmount())
                 .orderTime(orders.getOrderTime())
                 .build();
+
+        Map map = new HashMap();
+        map.put("type", ORDER_PAID);
+        map.put("orderId", orders.getId());
+        map.put("content", "订单号： " + orders.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
         return orderSubmitVO;
     }
 
@@ -161,6 +176,12 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
+
+        Map map = new HashMap();
+        map.put("type", ORDER_PAID);
+        map.put("orderId", orders.getId());
+        map.put("content", "订单号： " + outTradeNo);
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 
     @Override
