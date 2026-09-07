@@ -38,4 +38,6 @@ public interface OrderMapper {
     List<Orders> getByStatusAndOrderTimeLT(Integer status, LocalDateTime time);
 
     Double turnoverStatistics(LocalDateTime beginTime, LocalDateTime endTime, Integer status);
+
+    Integer countOrdersByStatus(LocalDateTime beginTime, LocalDateTime endTime, Integer status);
 }

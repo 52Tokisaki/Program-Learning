@@ -5,6 +5,7 @@ import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ReportMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
+import com.sky.vo.OrderReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.apache.commons.lang.StringUtils;
@@ -59,5 +60,35 @@ public class ReportServiceImpl implements ReportService {
             newUserList.add(newUser != null ? newUser : 0);
         }
         return new UserReportVO(StringUtils.join(dataList, ","), StringUtils.join(totalUserList, ","), StringUtils.join(newUserList, ","));
+    }
+
+    @Override
+    public OrderReportVO ordersStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> dataList = new ArrayList<>();
+        List<Integer> orderCountList = new ArrayList<>();
+        List<Integer> validOrderCountList = new ArrayList<>();
+        while (!begin.equals(end)) {
+            dataList.add(begin);
+            begin = begin.plusDays(1);
+            LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(begin, LocalTime.MAX);
+            // select count(*) from orders where order_time between beginTime and endTime
+            Integer orderCount = orderMapper.countOrdersByStatus(beginTime, endTime, null);
+            orderCountList.add(orderCount != null ? orderCount : 0);
+            // select count(*) from orders where order_time between beginTime and endTime and status = 5
+            Integer validOrderCount = orderMapper.countOrdersByStatus(beginTime, endTime, Orders.COMPLETED);
+            validOrderCountList.add(validOrderCount != null ? validOrderCount : 0);
+        }
+        Integer totalOrderCount = orderCountList.stream().reduce(Integer::sum).get();
+        Integer totalValidOrderCount = validOrderCountList.stream().reduce(Integer::sum).get();
+        Double orderCompletionRate = totalOrderCount != 0 ? (double) totalValidOrderCount / totalOrderCount : 0;
+        return new OrderReportVO(
+                StringUtils.join(dataList, ","),
+                StringUtils.join(orderCountList, ","),
+                StringUtils.join(validOrderCountList, ","),
+                totalOrderCount,
+                totalValidOrderCount,
+                orderCompletionRate);
+
     }
 }
