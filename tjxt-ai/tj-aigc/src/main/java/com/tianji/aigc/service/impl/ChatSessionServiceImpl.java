@@ -13,6 +13,9 @@ import com.tianji.common.utils.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ChatSessionServiceImpl extends ServiceImpl<ChatSessionMapper, ChatSession> implements ChatSessionService {
@@ -34,5 +37,10 @@ public class ChatSessionServiceImpl extends ServiceImpl<ChatSessionMapper, ChatS
                 .build();
         super.save(chatSession);
         return sessionVO;
+    }
+
+    @Override
+    public List<SessionVO.Example> getHotSession(Integer n) {
+        return RandomUtil.randomEleList(sessionProperties.getExamples(), n);
     }
 }

@@ -52,5 +52,4 @@ public class SessionVO {
          */
         private String describe;
     }
-
 }

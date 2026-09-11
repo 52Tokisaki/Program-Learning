@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.tianji.aigc.mapper.ChatSession;
 import com.tianji.aigc.vo.SessionVO;
 
+import java.util.List;
+
 public interface ChatSessionService extends IService<ChatSession> {
     /**
      * 创建会话session
@@ -12,4 +14,6 @@ public interface ChatSessionService extends IService<ChatSession> {
      * @return 会话信息
      */
     SessionVO createSession(Integer num);
+
+    List<SessionVO.Example> getHotSession(Integer n);
 }
