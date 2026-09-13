@@ -1,14 +1,13 @@
 package com.tianji.aigc.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.tianji.aigc.config.SystemPromptConfig;
 import com.tianji.aigc.dto.ChatDTO;
 import com.tianji.aigc.enums.ChatEventTypeEnum;
 import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.vo.ChatEventVO;
-import com.tianji.common.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.Generation;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -23,8 +22,10 @@ public class ChatServiceImpl implements ChatService {
     public Flux<ChatEventVO> chat(ChatDTO chatDTO) {
         return chatClient
                 .prompt()
-                .system(systemPromptConfig ->
-                        systemPromptConfig.params(Map.of("now", DateUtils.now())))
+                .system(promptSystem ->
+                        promptSystem
+                                .text(systemPromptConfig.getChatSystemMessage().get())
+                                .params(Map.of("now", DateUtil.now())))
                 .user(chatDTO.getQuestion())
                 .stream()
                 .chatResponse()
