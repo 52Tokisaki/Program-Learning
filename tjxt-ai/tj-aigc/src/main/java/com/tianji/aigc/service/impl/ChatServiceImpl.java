@@ -8,6 +8,7 @@ import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.vo.ChatEventVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -29,12 +30,14 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Flux<ChatEventVO> chat(ChatDTO chatDTO) {
+        String conversationId = ChatService.getConversationId(chatDTO.getSessionId());
         return chatClient
                 .prompt()
                 .system(promptSystem ->
                         promptSystem
                                 .text(systemPromptConfig.getChatSystemMessage().get())
                                 .params(Map.of("now", DateUtil.now())))
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId)) // 添加会话ID作为顾问参数
                 .user(chatDTO.getQuestion())
                 .stream()
                 .chatResponse()
