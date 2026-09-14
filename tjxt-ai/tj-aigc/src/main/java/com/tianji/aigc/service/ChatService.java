@@ -6,4 +6,6 @@ import reactor.core.publisher.Flux;
 
 public interface ChatService {
     Flux<ChatEventVO> chat(ChatDTO chatDTO);
+
+    void stop(String sessionId);
 }
