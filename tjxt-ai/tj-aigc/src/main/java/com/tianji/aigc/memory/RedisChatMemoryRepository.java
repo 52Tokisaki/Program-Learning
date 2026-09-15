@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RedisChatMemoryRepository implements ChatMemoryRepository {
     private static final String DEFAULT_PREFIX = "CHAT:";
@@ -37,7 +38,10 @@ public class RedisChatMemoryRepository implements ChatMemoryRepository {
     // 根据会话ID查询消息
     @Override
     public List<Message> findByConversationId(String conversationId) {
-        return List.of();
+        String redisKey = getKey(conversationId);
+        BoundListOperations<String, String> listOps = stringRedisTemplate.boundListOps(redisKey);
+        List<String> messageList = listOps.range(0, -1);
+        return messageList.stream().map(MessageUtil::toMessage).collect(Collectors.toList());
     }
 
     // 保存消息
