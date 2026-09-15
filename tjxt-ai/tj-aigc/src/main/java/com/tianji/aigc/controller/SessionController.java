@@ -2,6 +2,7 @@ package com.tianji.aigc.controller;
 
 
 import com.tianji.aigc.service.ChatSessionService;
+import com.tianji.aigc.vo.MessageVO;
 import com.tianji.aigc.vo.SessionVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,5 +26,10 @@ public class SessionController {
     @GetMapping("/hot")
     public List<SessionVO.Example> getHotSession(@RequestParam(value = "n", defaultValue = "3") Integer n) {
         return chatSessionService.getHotSession(n);
+    }
+
+    @GetMapping("/{sessionId}")
+    public List<MessageVO> queryBySessionId(@PathVariable("sessionId") String sessionId) {
+        return chatSessionService.queryBySessionId(sessionId);
     }
 }
