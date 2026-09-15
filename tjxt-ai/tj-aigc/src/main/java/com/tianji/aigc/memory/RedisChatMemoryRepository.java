@@ -1,6 +1,5 @@
 package com.tianji.aigc.memory;
 
-import cn.hutool.json.JSONUtil;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
@@ -49,7 +48,7 @@ public class RedisChatMemoryRepository implements ChatMemoryRepository {
 
         deleteByConversationId(conversationId); // 由于message时全量的，所以先删除再保存
 
-        messages.forEach(message -> listOps.rightPush(JSONUtil.toJsonStr(message)));
+        messages.forEach(message -> listOps.rightPush(MessageUtil.toJson(message))); // 使用自定义的消息类型进行消息的序列化和反序列化
     }
 
     // 删除会话ID对应的消息
