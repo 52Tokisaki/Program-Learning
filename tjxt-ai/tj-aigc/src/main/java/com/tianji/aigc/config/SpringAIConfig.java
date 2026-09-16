@@ -1,5 +1,6 @@
 package com.tianji.aigc.config;
 
+import com.tianji.aigc.memory.MysqlChatMemoryRepository;
 import com.tianji.aigc.memory.RedisChatMemoryRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -9,6 +10,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -43,8 +45,15 @@ public class SpringAIConfig {
      * 配置 ChatMemoryRepository
      */
     @Bean
-    public ChatMemoryRepository chatMemoryRepository() {
+    @ConditionalOnProperty(name = "tj.ai.memory.type", havingValue = "Redis", matchIfMissing = true)
+    public ChatMemoryRepository redisChatMemoryRepository() {
         return new RedisChatMemoryRepository();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "tj.ai.memory.type", havingValue = "MYSQL", matchIfMissing = true)
+    public ChatMemoryRepository mysqlChatMemoryRepository() {
+        return new MysqlChatMemoryRepository();
     }
 
     @Bean
