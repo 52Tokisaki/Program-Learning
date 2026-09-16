@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +26,8 @@ public class ChatServiceImpl implements ChatService {
     // 使用一个容器， 来存储会话和是否停止的映射关系
     // 1. 使用ConcurrentHashMap来存储会话和是否停止的映射关系，  2. 对于分布式环境， 可以使用Redis来存储会话和是否停止的映射关系
 //    private final ConcurrentHashMap<String, Boolean> GENERATE_STATUS = new ConcurrentHashMap<>();
+
+    private static final String GENERATE_STATUS_KEY = "GENERATE_STATUS_KEY";
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -44,11 +45,11 @@ public class ChatServiceImpl implements ChatService {
                 .user(chatDTO.getQuestion())
                 .stream()
                 .chatResponse()
-                .doFirst(() -> stringRedisTemplate.opsForValue().set(chatDTO.getSessionId(), "true"))
+                .doFirst(() -> stringRedisTemplate.opsForHash().put(GENERATE_STATUS_KEY, chatDTO.getSessionId(), "true"))
                 .doOnCancel(() -> saveStopHistoryRecord(conversationId, outputBuilder.toString())) // 停止输出时，将当前输出保存到会话中
-                .doOnError(throwable -> stringRedisTemplate.opsForValue().set(chatDTO.getSessionId(), "false"))
-                .doOnComplete(() -> stringRedisTemplate.opsForValue().set(chatDTO.getSessionId(), "false"))
-                .takeWhile(response -> "true".equals(stringRedisTemplate.opsForValue().get(chatDTO.getSessionId())))
+                .doOnError(throwable -> stringRedisTemplate.opsForHash().put(GENERATE_STATUS_KEY, chatDTO.getSessionId(), "false"))
+                .doOnComplete(() -> stringRedisTemplate.opsForHash().put(GENERATE_STATUS_KEY, chatDTO.getSessionId(), "false"))
+                .takeWhile(response -> "true".equals(stringRedisTemplate.opsForHash().get(GENERATE_STATUS_KEY, chatDTO.getSessionId())))
 //                .doFirst(() -> GENERATE_STATUS.put(chatDTO.getSessionId(), true))
 //                .doOnError(throwable -> GENERATE_STATUS.remove(chatDTO.getSessionId()))
 //                .doOnComplete(() -> GENERATE_STATUS.remove(chatDTO.getSessionId()))
@@ -69,7 +70,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void stop(String sessionId) {
 //        GENERATE_STATUS.put(sessionId, false); // 设置会话为停止状态
-        stringRedisTemplate.opsForValue().set(sessionId, "false"); // 设置会话为停止状态
+        stringRedisTemplate.opsForHash().put(GENERATE_STATUS_KEY, sessionId, "false"); // 设置会话为停止状态
     }
 
     /**

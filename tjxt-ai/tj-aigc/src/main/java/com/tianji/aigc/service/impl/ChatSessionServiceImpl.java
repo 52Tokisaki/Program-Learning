@@ -4,9 +4,9 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tianji.aigc.config.SessionProperties;
-import com.tianji.aigc.entity.ChatSessionMapper;
+import com.tianji.aigc.mapper.ChatSessionMapper;
 import com.tianji.aigc.enums.MessageTypeEnum;
-import com.tianji.aigc.mapper.ChatSession;
+import com.tianji.aigc.entity.ChatSession;
 import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.service.ChatSessionService;
 import com.tianji.aigc.vo.MessageVO;
@@ -19,7 +19,6 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

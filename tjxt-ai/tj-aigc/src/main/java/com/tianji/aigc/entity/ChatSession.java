@@ -1,4 +1,4 @@
-package com.tianji.aigc.mapper;
+package com.tianji.aigc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
