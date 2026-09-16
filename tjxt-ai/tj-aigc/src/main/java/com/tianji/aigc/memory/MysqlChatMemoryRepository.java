@@ -7,15 +7,12 @@ import com.tianji.aigc.service.ChatRecordService;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
-@ConditionalOnProperty(name = "tj.ai.memory.type", havingValue = "mysql")
 public class MysqlChatMemoryRepository implements ChatMemoryRepository {
 
     @Resource

@@ -9,6 +9,15 @@ spring:
     name: aigc-service
   main:
     allow-circular-references: true # 允许循环引用
+  data:
+    mongodb:
+      host: 192.168.150.101
+      port: 27017
+      database: tianji
+      authentication-database: admin #认证数据库
+      username: tianji
+      password: "123321"
+      auto-index-creation: true #自动创建索引
 tj:
   swagger:
     enable: true
@@ -34,4 +43,4 @@ tj:
           timeout-ms: 20000
     memory:
       max: 100 #存储最大的聊天记录数
-      type: MYSQL # Redis / MYSQL / MongoDB
+      type: MongoDB # Redis / MYSQL / MongoDB

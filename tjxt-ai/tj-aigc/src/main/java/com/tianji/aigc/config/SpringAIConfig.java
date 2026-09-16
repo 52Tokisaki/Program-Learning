@@ -1,5 +1,6 @@
 package com.tianji.aigc.config;
 
+import com.tianji.aigc.memory.MongoDBChatMemoryRepository;
 import com.tianji.aigc.memory.MysqlChatMemoryRepository;
 import com.tianji.aigc.memory.RedisChatMemoryRepository;
 import org.springframework.ai.chat.client.ChatClient;
@@ -9,6 +10,7 @@ import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -45,15 +47,21 @@ public class SpringAIConfig {
      * 配置 ChatMemoryRepository
      */
     @Bean
-    @ConditionalOnProperty(name = "tj.ai.memory.type", havingValue = "Redis", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "tj.ai.memory", value = "type", havingValue = "Redis", matchIfMissing = true)
     public ChatMemoryRepository redisChatMemoryRepository() {
         return new RedisChatMemoryRepository();
     }
 
     @Bean
-    @ConditionalOnProperty(name = "tj.ai.memory.type", havingValue = "MYSQL", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "tj.ai.memory", value = "type", havingValue = "MYSQL")
     public ChatMemoryRepository mysqlChatMemoryRepository() {
         return new MysqlChatMemoryRepository();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "tj.ai.memory", value = "type", havingValue = "MongoDB")
+    public ChatMemoryRepository mongoDBChatMemoryRepository() {
+        return new MongoDBChatMemoryRepository();
     }
 
     @Bean
