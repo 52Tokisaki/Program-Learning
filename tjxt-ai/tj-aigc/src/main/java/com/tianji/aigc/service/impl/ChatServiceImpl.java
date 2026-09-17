@@ -1,7 +1,12 @@
 package com.tianji.aigc.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.tianji.aigc.config.SystemPromptConfig;
+import com.tianji.aigc.config.ToolResultHolder;
+import com.tianji.aigc.constants.Constant;
 import com.tianji.aigc.dto.ChatDTO;
 import com.tianji.aigc.enums.ChatEventTypeEnum;
 import com.tianji.aigc.service.ChatService;
@@ -19,6 +24,9 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
+    public static final ChatEventVO STOP_EVENT = ChatEventVO.builder()
+            .eventType(ChatEventTypeEnum.STOP.getValue())
+            .build();
     private final ChatClient chatClient;
     private final SystemPromptConfig systemPromptConfig;
     private final ChatMemory chatMemory;
@@ -35,6 +43,7 @@ public class ChatServiceImpl implements ChatService {
     public Flux<ChatEventVO> chat(ChatDTO chatDTO) {
         StringBuilder outputBuilder = new StringBuilder();
         String conversationId = ChatService.getConversationId(chatDTO.getSessionId());
+        String requestId = IdUtil.simpleUUID(); // 生成请求ID
         return chatClient
                 .prompt()
                 .system(promptSystem ->
@@ -42,6 +51,7 @@ public class ChatServiceImpl implements ChatService {
                                 .text(systemPromptConfig.getChatSystemMessage().get())
                                 .params(Map.of("now", DateUtil.now())))
                 .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId)) // 添加会话ID作为顾问参数
+                .toolContext(Map.of(Constant.REQUEST_ID, requestId)) // 将请求ID作为工具上下文传递
                 .user(chatDTO.getQuestion())
                 .stream()
                 .chatResponse()
@@ -62,9 +72,17 @@ public class ChatServiceImpl implements ChatService {
                             .eventType(ChatEventTypeEnum.DATA.getValue())
                             .build();
                 })
-                .concatWith(Flux.just(ChatEventVO.builder()
-                        .eventType(ChatEventTypeEnum.STOP.getValue())
-                        .build()));
+                .concatWith(Flux.defer(() -> {
+                    Map<String, Object> map = ToolResultHolder.get(requestId);
+                    if (CollUtil.isNotEmpty(map)) {
+                        ToolResultHolder.remove(requestId); // 清除参数列表
+                        return Flux.just(ChatEventVO.builder()
+                                        .eventType(ChatEventTypeEnum.PARAM.getValue())
+                                        .eventData(map)
+                                        .build(), STOP_EVENT);
+                    }
+                    return Flux.just(STOP_EVENT);
+                }));
     }
 
     @Override
