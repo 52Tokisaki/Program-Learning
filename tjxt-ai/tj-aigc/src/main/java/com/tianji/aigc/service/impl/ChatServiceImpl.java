@@ -11,6 +11,7 @@ import com.tianji.aigc.dto.ChatDTO;
 import com.tianji.aigc.enums.ChatEventTypeEnum;
 import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.vo.ChatEventVO;
+import com.tianji.common.utils.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -44,6 +45,7 @@ public class ChatServiceImpl implements ChatService {
         StringBuilder outputBuilder = new StringBuilder();
         String conversationId = ChatService.getConversationId(chatDTO.getSessionId());
         String requestId = IdUtil.simpleUUID(); // 生成请求ID
+        Long userId = UserContext.getUser();
         return chatClient
                 .prompt()
                 .system(promptSystem ->
@@ -51,7 +53,7 @@ public class ChatServiceImpl implements ChatService {
                                 .text(systemPromptConfig.getChatSystemMessage().get())
                                 .params(Map.of("now", DateUtil.now())))
                 .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId)) // 添加会话ID作为顾问参数
-                .toolContext(Map.of(Constant.REQUEST_ID, requestId)) // 将请求ID作为工具上下文传递
+                .toolContext(Map.of(Constant.REQUEST_ID, requestId, Constant.USER_ID, userId)) // 将请求ID作为工具上下文传递
                 .user(chatDTO.getQuestion())
                 .stream()
                 .chatResponse()
