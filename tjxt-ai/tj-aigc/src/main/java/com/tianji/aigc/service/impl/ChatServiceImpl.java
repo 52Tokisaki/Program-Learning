@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.tianji.aigc.config.SystemPromptConfig;
 import com.tianji.aigc.config.ToolResultHolder;
 import com.tianji.aigc.constants.Constant;
@@ -67,6 +68,14 @@ public class ChatServiceImpl implements ChatService {
 //                .doOnComplete(() -> GENERATE_STATUS.remove(chatDTO.getSessionId()))
 //                .takeWhile(response -> GENERATE_STATUS.getOrDefault(chatDTO.getSessionId(), false)) // 用于控制流的结束
                 .map(chatResponse -> {
+                    // 对于响应结果进行处理，如果是最后一条数据，就把此次消息id放到内存中
+                    // 主要用于存储消息数据到 redis中，可以根据消息di获取的请求id，再通过请求id就可以获取到参数列表了
+                    // 从而解决，在历史聊天记录中没有外参数的问题
+                    String finishReason = chatResponse.getResult().getMetadata().getFinishReason(); // 获取结束原因
+                    if (StrUtil.equals(Constant.STOP, finishReason)) {
+                        String messageId = chatResponse.getMetadata().getId();
+                        ToolResultHolder.put(messageId, Constant.REQUEST_ID, requestId); // 将消息ID和请求ID放入工具结果持有者中
+                    }
                     String result = chatResponse.getResult().getOutput().getText();
                     outputBuilder.append(result); // 将结果追加到输出构建器中
                     return ChatEventVO.builder()

@@ -7,6 +7,7 @@ import com.tianji.aigc.config.SessionProperties;
 import com.tianji.aigc.mapper.ChatSessionMapper;
 import com.tianji.aigc.enums.MessageTypeEnum;
 import com.tianji.aigc.entity.ChatSession;
+import com.tianji.aigc.memory.MyAssistantMessage;
 import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.service.ChatSessionService;
 import com.tianji.aigc.vo.MessageVO;
@@ -58,9 +59,18 @@ public class ChatSessionServiceImpl extends ServiceImpl<ChatSessionMapper, ChatS
         List<Message> messageList = chatMemory.get(conversationId);
         return messageList.stream().filter(
                 message -> message.getMessageType().equals(MessageType.ASSISTANT) || message.getMessageType().equals(MessageType.USER)
-        ).map(message -> MessageVO.builder()
-                .type(MessageTypeEnum.valueOf(message.getMessageType().name()))
-                .content(message.getText())
-                .build()).collect(Collectors.toList());
+        ).map(message -> {
+            if (message instanceof MyAssistantMessage) {
+                return MessageVO.builder()
+                        .type(MessageTypeEnum.valueOf(message.getMessageType().name()))
+                        .content(message.getText())
+                        .params(((MyAssistantMessage) message).getParams())
+                        .build();
+            }
+            return MessageVO.builder()
+                    .type(MessageTypeEnum.valueOf(message.getMessageType().name()))
+                    .content(message.getText())
+                    .build();
+        }).toList();
     }
 }
