@@ -14,6 +14,7 @@ import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.vo.ChatEventVO;
 import com.tianji.common.utils.UserContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -93,7 +95,12 @@ public class ChatServiceImpl implements ChatService {
                             .build();
                 })
                 .concatWith(Flux.defer(() -> {
+                    log.info("concatWith at {}, map={}", System.currentTimeMillis(), ToolResultHolder.get(requestId));
                     Map<String, Object> map = ToolResultHolder.get(requestId);
+                    log.info("ChatServiceImpl: map identity={}, classLoader={}, keys={}",
+                            ToolResultHolder.mapIdentity(),
+                            ToolResultHolder.holderClassLoader(),
+                            ToolResultHolder.keys());
                     if (CollUtil.isNotEmpty(map)) {
                         ToolResultHolder.remove(requestId); // 清除参数列表
                         return Flux.just(ChatEventVO.builder()

@@ -30,12 +30,14 @@ public class MessageUtil {
             // 通过 messageId 获取 requestId，再通过 requestId 获取参数列表，如果有，就存储起来
             // 最后，删除 messageId 对应的数据
             String messageId = Convert.toStr(assistantMessage.getMetadata().get(Constant.ID));
-            String requestId = Convert.toStr(ToolResultHolder.get(messageId, Constant.REQUEST_ID));
-            Map<String, Object> params = ToolResultHolder.get(requestId);
-            if (ObjectUtil.isNotEmpty(params)) {
-                myMessage.setParams(params);
+            if (null != messageId) {
+                String requestId = Convert.toStr(ToolResultHolder.get(messageId, Constant.REQUEST_ID));
+                Map<String, Object> params = ToolResultHolder.get(requestId);
+                if (ObjectUtil.isNotEmpty(params)) {
+                    myMessage.setParams(params);
+                }
+                ToolResultHolder.remove(messageId);
             }
-            ToolResultHolder.remove(requestId);
         }
 
         if (message instanceof ToolResponseMessage toolResponseMessage) {

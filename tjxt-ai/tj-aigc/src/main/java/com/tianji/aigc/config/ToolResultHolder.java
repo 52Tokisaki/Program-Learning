@@ -1,6 +1,7 @@
 package com.tianji.aigc.config;
 
 import cn.hutool.core.lang.Assert;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author zzj
  * @version 1.0
  */
+@Slf4j
 public class ToolResultHolder {
 
     private static final Map<String, Map<String, Object>> HANDLER_MAP = new ConcurrentHashMap<>();
@@ -25,6 +27,8 @@ public class ToolResultHolder {
     }
 
     public static void put(String key, String field, Object result) {
+//        log.info("PUT key={}, field={}, caller={}", key, field,
+//                Thread.currentThread().getStackTrace()[2]);
         Assert.notNull(key, "key is not null!");
         Assert.notNull(field, "field is not null!");
         HANDLER_MAP.computeIfAbsent(key, k -> new HashMap<>()).put(field, result);
@@ -43,8 +47,22 @@ public class ToolResultHolder {
     }
 
     public static void remove(String key) {
+//        log.warn("REMOVE key={}, caller={}", key,
+//                Thread.currentThread().getStackTrace()[2]);
         Assert.notNull(key, "key is not null!");
         HANDLER_MAP.remove(key);
     }
+
+/*    public static java.util.Set<String> keys() {
+        return HANDLER_MAP.keySet();
+    }
+
+    public static int mapIdentity() {
+        return System.identityHashCode(HANDLER_MAP);
+    }
+
+    public static ClassLoader holderClassLoader() {
+        return ToolResultHolder.class.getClassLoader();
+    }*/
 
 }

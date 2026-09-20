@@ -8,6 +8,7 @@ import com.tianji.aigc.tools.result.CourseInfo;
 import com.tianji.api.client.course.CourseClient;
 import com.tianji.api.dto.course.CourseBaseInfoDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CourseTools {
@@ -36,6 +38,11 @@ public class CourseTools {
                     String requestId = MapUtil.get(toolContext.getContext(), Constant.REQUEST_ID, String.class); // 从上下文中去除传递的requestId
                     String field = StrUtil.format(FIELD_NAME_FORMAT, CourseInfo.class.getSimpleName(), courseInfo.getId());
                     ToolResultHolder.put(requestId, field, courseInfo); // 将课程信息放入工具结果持有器中传递给输出流
+                    /*log.info("CourseTools put at {}, requestId={}, field={}", System.currentTimeMillis(), requestId, field);
+                    log.info("CourseTools: map identity={}, classLoader={}, keys={}",
+                            ToolResultHolder.mapIdentity(),
+                            ToolResultHolder.holderClassLoader(),
+                            ToolResultHolder.keys());*/
                     return courseInfo;
                 })
                 .orElse(null);
