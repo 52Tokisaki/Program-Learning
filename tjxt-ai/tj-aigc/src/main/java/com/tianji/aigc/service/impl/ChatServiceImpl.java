@@ -15,8 +15,11 @@ import com.tianji.aigc.vo.ChatEventVO;
 import com.tianji.common.utils.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -32,6 +35,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatClient chatClient;
     private final SystemPromptConfig systemPromptConfig;
     private final ChatMemory chatMemory;
+    private final VectorStore vectorStore;
 
     // 使用一个容器， 来存储会话和是否停止的映射关系
     // 1. 使用ConcurrentHashMap来存储会话和是否停止的映射关系，  2. 对于分布式环境， 可以使用Redis来存储会话和是否停止的映射关系
@@ -47,13 +51,18 @@ public class ChatServiceImpl implements ChatService {
         String conversationId = ChatService.getConversationId(chatDTO.getSessionId());
         String requestId = IdUtil.simpleUUID(); // 生成请求ID
         Long userId = UserContext.getUser();
+        // 创建RAG增强
+        QuestionAnswerAdvisor questionAnswerAdvisor = QuestionAnswerAdvisor.builder(vectorStore)
+                .searchRequest(SearchRequest.builder().similarityThreshold(0.6d).topK(6).build()).build();
         return chatClient
                 .prompt()
                 .system(promptSystem ->
                         promptSystem
                                 .text(systemPromptConfig.getChatSystemMessage().get())
                                 .params(Map.of("now", DateUtil.now())))
-                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId)) // 添加会话ID作为顾问参数
+                .advisors(advisor -> advisor
+                        .advisors(questionAnswerAdvisor) // 设置RAG增强
+                        .param(ChatMemory.CONVERSATION_ID, conversationId)) // 添加会话ID作为顾问参数
                 .toolContext(Map.of(Constant.REQUEST_ID, requestId, Constant.USER_ID, userId)) // 将请求ID作为工具上下文传递
                 .user(chatDTO.getQuestion())
                 .stream()
