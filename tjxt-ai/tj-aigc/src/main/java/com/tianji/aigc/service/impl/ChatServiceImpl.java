@@ -97,10 +97,10 @@ public class ChatServiceImpl implements ChatService {
                 .concatWith(Flux.defer(() -> {
                     log.info("concatWith at {}, map={}", System.currentTimeMillis(), ToolResultHolder.get(requestId));
                     Map<String, Object> map = ToolResultHolder.get(requestId);
-                    log.info("ChatServiceImpl: map identity={}, classLoader={}, keys={}",
-                            ToolResultHolder.mapIdentity(),
-                            ToolResultHolder.holderClassLoader(),
-                            ToolResultHolder.keys());
+//                    log.info("ChatServiceImpl: map identity={}, classLoader={}, keys={}",
+//                            ToolResultHolder.mapIdentity(),
+//                            ToolResultHolder.holderClassLoader(),
+//                            ToolResultHolder.keys());
                     if (CollUtil.isNotEmpty(map)) {
                         ToolResultHolder.remove(requestId); // 清除参数列表
                         return Flux.just(ChatEventVO.builder()
