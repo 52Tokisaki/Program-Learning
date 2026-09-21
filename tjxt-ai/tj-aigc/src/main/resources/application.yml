@@ -18,6 +18,10 @@ spring:
       username: tianji
       password: "123321"
       auto-index-creation: true #自动创建索引
+    redis:
+      host: 192.168.150.101
+      port: 16379
+      password: 123456
 tj:
   swagger:
     enable: true
