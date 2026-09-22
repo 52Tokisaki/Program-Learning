@@ -34,4 +34,6 @@ public interface ChatSessionService extends IService<ChatSession> {
     Map<String, List<ChatSessionVO>> queryHistorySession();
 
     void deleteHistorySession(String sessionId);
+
+    void updateTitle(String sessionId, String title);
 }

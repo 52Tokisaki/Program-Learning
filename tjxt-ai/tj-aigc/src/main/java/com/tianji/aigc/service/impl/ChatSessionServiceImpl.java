@@ -153,4 +153,13 @@ public class ChatSessionServiceImpl extends ServiceImpl<ChatSessionMapper, ChatS
         // 清除会话记忆
         chatMemory.clear(ChatService.getConversationId(sessionId));
     }
+
+    @Override
+    public void updateTitle(String sessionId, String title) {
+        super.lambdaUpdate()
+                .set(ChatSession::getTitle, StrUtil.sub(title, 0, 100))
+                .eq(ChatSession::getSessionId, sessionId)
+                .eq(ChatSession::getUserId, UserContext.getUser())
+                .update();
+    }
 }
