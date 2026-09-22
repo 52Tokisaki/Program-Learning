@@ -5,6 +5,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tianji.aigc.config.SessionProperties;
 import com.tianji.aigc.mapper.ChatSessionMapper;
@@ -30,7 +32,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -140,5 +141,16 @@ public class ChatSessionServiceImpl extends ServiceImpl<ChatSessionMapper, ChatS
                 return MORE_THAN_YEAR;
             }
         });
+    }
+
+    @Override
+    public void deleteHistorySession(String sessionId) {
+        LambdaQueryWrapper<ChatSession> lambdaQueryWrapper = Wrappers.<ChatSession>lambdaQuery()
+                .eq(ChatSession::getSessionId, sessionId)
+                .eq(ChatSession::getUserId, UserContext.getUser());
+        super.remove(lambdaQueryWrapper); // 删除会话
+
+        // 清除会话记忆
+        chatMemory.clear(ChatService.getConversationId(sessionId));
     }
 }

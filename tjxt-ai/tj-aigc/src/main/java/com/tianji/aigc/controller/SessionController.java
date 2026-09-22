@@ -39,4 +39,9 @@ public class SessionController {
     public Map<String, List<ChatSessionVO>> queryHistorySession() {
         return chatSessionService.queryHistorySession();
     }
+
+    @DeleteMapping("/history")
+    public void deleteHistorySession(@RequestParam("sessionId") String sessionId) {
+        chatSessionService.deleteHistorySession(sessionId);
+    }
 }
