@@ -11,6 +11,7 @@ import com.tianji.aigc.constants.Constant;
 import com.tianji.aigc.dto.ChatDTO;
 import com.tianji.aigc.enums.ChatEventTypeEnum;
 import com.tianji.aigc.service.ChatService;
+import com.tianji.aigc.service.ChatSessionService;
 import com.tianji.aigc.vo.ChatEventVO;
 import com.tianji.common.utils.UserContext;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class ChatServiceImpl implements ChatService {
     private static final String GENERATE_STATUS_KEY = "GENERATE_STATUS_KEY";
 
     private final StringRedisTemplate stringRedisTemplate;
+    private final ChatSessionService chatSessionService;
 
     @Override
     public Flux<ChatEventVO> chat(ChatDTO chatDTO) {
@@ -53,6 +55,7 @@ public class ChatServiceImpl implements ChatService {
         String conversationId = ChatService.getConversationId(chatDTO.getSessionId());
         String requestId = IdUtil.simpleUUID(); // 生成请求ID
         Long userId = UserContext.getUser();
+        chatSessionService.update(chatDTO.getSessionId(), chatDTO.getQuestion(), userId);
         // 创建RAG增强
         QuestionAnswerAdvisor questionAnswerAdvisor = QuestionAnswerAdvisor.builder(vectorStore)
                 .searchRequest(SearchRequest.builder().similarityThreshold(0.6d).topK(6).build()).build();

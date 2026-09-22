@@ -1,7 +1,9 @@
 package com.tianji.aigc.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tianji.aigc.config.SessionProperties;
 import com.tianji.aigc.mapper.ChatSessionMapper;
@@ -18,8 +20,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,5 +76,26 @@ public class ChatSessionServiceImpl extends ServiceImpl<ChatSessionMapper, ChatS
                     .content(message.getText())
                     .build();
         }).toList();
+    }
+
+    @Async // 异步更新会话信息
+    @Override
+    public void update(String sessionId, String title, Long userId) {
+        List<ChatSession> chatSessionList = super.lambdaQuery()
+                .eq(ChatSession::getSessionId, sessionId)
+                .eq(ChatSession::getUserId, userId)
+                .list();
+        // 如果会话不存在，则返回
+        if (CollUtil.isEmpty(chatSessionList)) {
+            return;
+        }
+        // 取第一个会话
+        ChatSession chatSession = chatSessionList.get(0);
+        // 如果会话标题不为空且传入的标题为空，则更新会话标题
+        if (StrUtil.isEmpty(chatSession.getTitle()) && !StrUtil.isEmpty(title)) {
+            chatSession.setTitle(StrUtil.sub(title, 0, 100));
+        }
+        chatSession.setUpdateTime(LocalDateTime.now());
+        super.updateById(chatSession);
     }
 }
