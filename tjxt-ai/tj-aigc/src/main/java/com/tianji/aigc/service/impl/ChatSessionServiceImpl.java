@@ -1,5 +1,6 @@
 package com.tianji.aigc.service.impl;
 
+import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -12,6 +13,7 @@ import com.tianji.aigc.entity.ChatSession;
 import com.tianji.aigc.memory.MyAssistantMessage;
 import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.service.ChatSessionService;
+import com.tianji.aigc.vo.ChatSessionVO;
 import com.tianji.aigc.vo.MessageVO;
 import com.tianji.aigc.vo.SessionVO;
 import com.tianji.common.utils.BeanUtils;
@@ -23,8 +25,11 @@ import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,5 +102,43 @@ public class ChatSessionServiceImpl extends ServiceImpl<ChatSessionMapper, ChatS
         }
         chatSession.setUpdateTime(LocalDateTime.now());
         super.updateById(chatSession);
+    }
+
+    @Override
+    public Map<String, List<ChatSessionVO>> queryHistorySession() {
+        List<ChatSession> chatSessionList = super.lambdaQuery()
+                .isNotNull(ChatSession::getTitle)
+                .orderByDesc(ChatSession::getUpdateTime)
+                .last("limit 30")
+                .list();
+        if (CollUtil.isEmpty(chatSessionList)) {
+            return Map.of();
+        }
+        List<ChatSessionVO> chatSessionVOList = chatSessionList.stream().map(chatSession -> ChatSessionVO.builder()
+                .sessionId(chatSession.getSessionId())
+                .title(chatSession.getTitle())
+                .updateTime(chatSession.getUpdateTime())
+                .build()).toList();
+
+        final var TODAY = "当天";
+        final var LAST_30_DAYS = "最近30天";
+        final var LAST_YEAR = "最近1年";
+        final var MORE_THAN_YEAR = "1年以上";
+
+        LocalDate now = LocalDateTime.now().toLocalDate();
+
+        return CollStreamUtil.groupByKey(chatSessionVOList, chatSessionVO -> {
+            LocalDate updateTime = chatSessionVO.getUpdateTime().toLocalDate();
+            long between = Math.abs(ChronoUnit.DAYS.between(updateTime, now));
+            if (between == 0) {
+                return TODAY;
+            } else if (between <= 30) {
+                return LAST_30_DAYS;
+            } else if (between <= 365) {
+                return LAST_YEAR;
+            } else {
+                return MORE_THAN_YEAR;
+            }
+        });
     }
 }

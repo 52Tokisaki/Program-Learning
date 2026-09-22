@@ -2,6 +2,7 @@ package com.tianji.aigc.controller;
 
 
 import com.tianji.aigc.service.ChatSessionService;
+import com.tianji.aigc.vo.ChatSessionVO;
 import com.tianji.aigc.vo.MessageVO;
 import com.tianji.aigc.vo.SessionVO;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/session")
@@ -31,5 +33,10 @@ public class SessionController {
     @GetMapping("/{sessionId}")
     public List<MessageVO> queryBySessionId(@PathVariable("sessionId") String sessionId) {
         return chatSessionService.queryBySessionId(sessionId);
+    }
+
+    @GetMapping("/history")
+    public Map<String, List<ChatSessionVO>> queryHistorySession() {
+        return chatSessionService.queryHistorySession();
     }
 }
