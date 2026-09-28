@@ -59,3 +59,4 @@ tj:
     memory:
       max: 100 #存储最大的聊天记录数
       type: Redis # Redis / MYSQL / MongoDB
+    chat-type: ROUTE # ROUTE / ENHANCE / APP

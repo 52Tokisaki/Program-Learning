@@ -8,6 +8,7 @@ import com.tianji.aigc.enums.ChatEventTypeEnum;
 import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.vo.ChatEventVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -15,6 +16,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
+@ConditionalOnProperty(prefix = "tj.ai", name = "chat-type", havingValue = "ROUTE")
 public class AgentServiceImpl implements ChatService {
     @Override
     public Flux<ChatEventVO> chat(ChatDTO chatDTO) {
