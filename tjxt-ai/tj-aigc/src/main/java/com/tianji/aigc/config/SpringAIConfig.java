@@ -35,8 +35,8 @@ public class SpringAIConfig {
                                  OrderTools orderTools // 订单工具
     ) {
         return chatClientBuilder
-//                .defaultAdvisors(loggerAdvisor, messageChatMemoryAdvisor) //添加 Advisor 功能增强
-                .defaultAdvisors(loggerAdvisor) //添加 Advisor 功能增强
+                .defaultAdvisors(loggerAdvisor, messageChatMemoryAdvisor) //添加 Advisor 功能增强
+//                .defaultAdvisors(loggerAdvisor) //添加 Advisor 功能增强，一定要注册会话记忆，否则无法记录会话
 //                .defaultTools(courseTools, orderTools) // 添加课程工具
                 .build();
     }

@@ -1,6 +1,7 @@
 package com.tianji.aigc.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.tianji.aigc.agent.AbstractAgent;
 import com.tianji.aigc.agent.Agent;
 import com.tianji.aigc.dto.ChatDTO;
 import com.tianji.aigc.enums.AgentTypeEnum;
@@ -24,14 +25,16 @@ public class AgentServiceImpl implements ChatService {
         String sessionId = chatDTO.getSessionId();
 
         Agent routeAgent = findAgentByType(AgentTypeEnum.ROUTE); // 获取路由智能体
-        AgentTypeEnum routeResult = AgentTypeEnum.agentNameOf(routeAgent.process(question, sessionId));
+        String result = routeAgent.process(question, sessionId); // 获取路由结果
+        AgentTypeEnum routeResult = AgentTypeEnum.agentNameOf(result); // 将结果转换为AgentTypeEnum
         Agent agent = findAgentByType(routeResult); // 获取对应类型的智能体
         if (null == agent) {
             return Flux.just(
                     ChatEventVO.builder()
-                            .eventData(routeResult)
+                            .eventData(result)
                             .eventType(ChatEventTypeEnum.DATA.getValue())
-                            .build()
+                            .build(),
+                    AbstractAgent.STOP_EVENT
             );
         }
         return agent.processStream(question, sessionId);

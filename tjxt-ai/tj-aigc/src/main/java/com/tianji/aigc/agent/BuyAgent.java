@@ -4,6 +4,7 @@ import com.tianji.aigc.config.SystemPromptConfig;
 import com.tianji.aigc.constants.Constant;
 import com.tianji.aigc.enums.AgentTypeEnum;
 import com.tianji.aigc.tools.OrderTools;
+import com.tianji.common.utils.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,7 @@ public class BuyAgent extends AbstractAgent{
 
     @Override
     public Map<String, Object> toolContext(String sessionId, String requestId) {
-        return Map.of(Constant.REQUEST_ID, requestId);
+        return Map.of(Constant.REQUEST_ID, requestId,
+                Constant.USER_ID, UserContext.getUser()); // 上下文中一定要添加userId，否则下单工具会报错401
     }
 }
