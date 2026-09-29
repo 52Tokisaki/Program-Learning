@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RedisChatMemoryRepository implements ChatMemoryRepository {
+public class RedisChatMemoryRepository implements ChatMemoryRepository, MyChatMemoryRepository {
     private static final String DEFAULT_PREFIX = "CHAT:";
 
     private final String prefix;
@@ -64,5 +64,12 @@ public class RedisChatMemoryRepository implements ChatMemoryRepository {
 
     private String getKey(String conversationId) {
         return prefix + conversationId;
+    }
+
+    @Override
+    public void optimization(String conversationId) {
+        String key = getKey(conversationId);
+        BoundListOperations<String, String> listOps = stringRedisTemplate.boundListOps(key);
+        listOps.rightPop(2); // 删除最后两条消息
     }
 }

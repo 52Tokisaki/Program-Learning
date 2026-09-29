@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class MysqlChatMemoryRepository implements ChatMemoryRepository {
+public class MysqlChatMemoryRepository implements ChatMemoryRepository, MyChatMemoryRepository {
 
     @Resource
     private ChatRecordService chatRecordService;
@@ -66,6 +66,15 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
     public void deleteByConversationId(String conversationId) {
         chatRecordService.lambdaUpdate()
                 .eq(ChatRecord::getConversationId, conversationId)
+                .remove();
+    }
+
+    @Override
+    public void optimization(String conversationId) {
+        // 删除最近两条记录
+        chatRecordService.lambdaUpdate()
+                .eq(ChatRecord::getConversationId, conversationId)
+                .last("limit 2")
                 .remove();
     }
 }

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MongoDBChatMemoryRepository implements ChatMemoryRepository {
+public class MongoDBChatMemoryRepository implements ChatMemoryRepository, MyChatMemoryRepository {
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -65,5 +65,11 @@ public class MongoDBChatMemoryRepository implements ChatMemoryRepository {
     @Override
     public void deleteByConversationId(String conversationId) {
         mongoTemplate.remove(Query.query(Criteria.where("conversationId").is(conversationId)), ChatRecord.class);
+    }
+
+    @Override
+    public void optimization(String conversationId) {
+        // 删除会话ID对应的最近两条记录
+        mongoTemplate.remove(Query.query(Criteria.where("conversationId").is(conversationId).and("messages").size(2)), ChatRecord.class);
     }
 }

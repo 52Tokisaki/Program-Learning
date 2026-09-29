@@ -1,6 +1,8 @@
 package com.tianji.aigc.config;
 
+import com.tianji.aigc.advisor.RecordOptimizationAdvisor;
 import com.tianji.aigc.memory.MongoDBChatMemoryRepository;
+import com.tianji.aigc.memory.MyChatMemoryRepository;
 import com.tianji.aigc.memory.MysqlChatMemoryRepository;
 import com.tianji.aigc.memory.RedisChatMemoryRepository;
 import com.tianji.aigc.tools.CourseTools;
@@ -31,11 +33,12 @@ public class SpringAIConfig {
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder,
                                  Advisor loggerAdvisor,  // 日志记录器
                                  Advisor messageChatMemoryAdvisor, // 会话存储
+                                 Advisor recordOptimizationAdvisor, // 会话优化
                                  CourseTools courseTools, // 课程工具
                                  OrderTools orderTools // 订单工具
     ) {
         return chatClientBuilder
-                .defaultAdvisors(loggerAdvisor, messageChatMemoryAdvisor) //添加 Advisor 功能增强
+                .defaultAdvisors(loggerAdvisor, messageChatMemoryAdvisor, recordOptimizationAdvisor) //添加 Advisor 功能增强
 //                .defaultAdvisors(loggerAdvisor) //添加 Advisor 功能增强，一定要注册会话记忆，否则无法记录会话
 //                .defaultTools(courseTools, orderTools) // 添加课程工具
                 .build();
@@ -54,19 +57,19 @@ public class SpringAIConfig {
      */
     @Bean
     @ConditionalOnProperty(prefix = "tj.ai.memory", value = "type", havingValue = "Redis", matchIfMissing = true)
-    public ChatMemoryRepository redisChatMemoryRepository() {
+    public RedisChatMemoryRepository redisChatMemoryRepository() {
         return new RedisChatMemoryRepository();
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "tj.ai.memory", value = "type", havingValue = "MYSQL")
-    public ChatMemoryRepository mysqlChatMemoryRepository() {
+    public MysqlChatMemoryRepository mysqlChatMemoryRepository() {
         return new MysqlChatMemoryRepository();
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "tj.ai.memory", value = "type", havingValue = "MongoDB")
-    public ChatMemoryRepository mongoDBChatMemoryRepository() {
+    public MongoDBChatMemoryRepository mongoDBChatMemoryRepository() {
         return new MongoDBChatMemoryRepository();
     }
 
@@ -85,6 +88,11 @@ public class SpringAIConfig {
     @Bean
     public Advisor messageChatMemoryAdvisor(ChatMemory chatMemory) {
         return MessageChatMemoryAdvisor.builder(chatMemory).build();
+    }
+
+    @Bean
+    public Advisor recordOptimizationAdvisor(MyChatMemoryRepository myChatMemoryRepository) {
+        return new RecordOptimizationAdvisor(myChatMemoryRepository);
     }
 
 }
