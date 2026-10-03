@@ -25,4 +25,9 @@ public class ChatController {
     public void stop(@RequestParam("sessionId") String sessionId) {
         chatService.stop(sessionId);
     }
+
+    @PostMapping("/text")
+    public String chatText(@RequestBody String question) {
+        return this.chatService.chatText(question);
+    }
 }

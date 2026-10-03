@@ -38,6 +38,7 @@ public class ChatServiceImpl implements ChatService {
             .eventType(ChatEventTypeEnum.STOP.getValue())
             .build();
     private final ChatClient chatClient;
+    private final ChatClient openAiChatClient;
     private final SystemPromptConfig systemPromptConfig;
     private final ChatMemory chatMemory;
     private final VectorStore vectorStore;
@@ -121,6 +122,15 @@ public class ChatServiceImpl implements ChatService {
     public void stop(String sessionId) {
 //        GENERATE_STATUS.put(sessionId, false); // 设置会话为停止状态
         stringRedisTemplate.opsForHash().put(GENERATE_STATUS_KEY, sessionId, "false"); // 设置会话为停止状态
+    }
+
+    @Override
+    public String chatText(String question) {
+        return openAiChatClient.prompt()
+                .system(promptSystem -> promptSystem.text(this.systemPromptConfig.getTextSystemMessage().get()))
+                .user(question)
+                .call()
+                .content();
     }
 
     /**

@@ -65,4 +65,9 @@ public class AgentServiceImpl implements ChatService {
         Agent routeAgent = findAgentByType(AgentTypeEnum.ROUTE); // 获取路由智能体
         routeAgent.stop(sessionId);
     }
+
+    @Override
+    public String chatText(String question) {
+        return "";
+    }
 }
