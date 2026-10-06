@@ -3,6 +3,7 @@ package com.tianji.aigc.controller;
 import com.tianji.aigc.dto.ChatDTO;
 import com.tianji.aigc.service.ChatService;
 import com.tianji.aigc.vo.ChatEventVO;
+import com.tianji.aigc.vo.TemplateVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,8 @@ import reactor.core.publisher.Flux;
 public class ChatController {
 
     private final ChatService chatService;
+
+    private final TemplateVO TEMPLATE_VO = new TemplateVO();
 
     @PostMapping
     public Flux<ChatEventVO> chat(@RequestBody ChatDTO chatDTO) {
@@ -29,5 +32,10 @@ public class ChatController {
     @PostMapping("/text")
     public String chatText(@RequestBody String question) {
         return this.chatService.chatText(question);
+    }
+
+    @GetMapping("/templates")
+    public TemplateVO getTemplates() {
+        return TEMPLATE_VO;
     }
 }
